@@ -1,38 +1,63 @@
 ﻿@page "/"
 @using Frontend.Models
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
 <h1>Presentation Overview</h1>
 
-@{
-    IEnumerable<Presentation>? presentations = null;
+@code{
+    public IEnumerable<Presentation>? Presentations = null;
+    public bool Loading = true;
 }
 
 @{
-if (presentations == null)
+    if (Presentations == null && Loading)
     {
         <p><em>Loading...</em></p>
     }
+    else if (Presentations != null)
+    { // calendar view
+        <div class="calendar">
+            <div class="calendar__header">
+                <span class="calendar__icon">«</span>
+                <span class="calendar__month">January 2024</span>
+                <span class="calendar__icon">»</span>
+            </div>
+            <div class="calendar__weekdays">
+                <div class="calendar__weekday">Sun</div>
+                <div class="calendar__weekday">Mon</div>
+                <div class="calendar__weekday">Tue</div>
+                <div class="calendar__weekday">Wed</div>
+                <div class="calendar__weekday">Thu</div>
+                <div class="calendar__weekday">Fri</div>
+                <div class="calendar__weekday">Sat</div>
+            </div>
+            <div class="calendar__days">
+                <!-- Example for a few days -->
+                <div class="calendar__day">1</div>
+                <div class="calendar__day">2</div>
+                <div class="calendar__day">3</div>
+                <!-- Add additional days as needed -->
+                <!-- Special classes for specific days -->
+                <div class="calendar__day calendar__day--today">4</div>
+                <div class="calendar__day calendar__day--selected">5</div>
+                <div class="calendar__day calendar__day--disabled">6</div>
+                <!-- Continue for the rest of the days -->
+            </div>
+        </div>
+
+    }
     else
     {
-        <ul>
-            @foreach (var presentation in presentations)
-            {
-                <li>
-                    <p>@presentation.Name</p>
-                    <p>@presentation.FromDate</p>
-                    <p>@presentation.ToDate</p>
-                    <p>@presentation.Location</p>
-                </li>
-            }
-        </ul>
+        <p><em>Loading encountered an error</em></p>
     }
 }
 
 @code {
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        this.presentations = await Http.GetFromJsonAsync<IEnumerable<Presentation>>("api/presentation");
+        this.Presentations = await Http.GetFromJsonAsync<IEnumerable<Presentation>>("api/presentation");
+        Loading = false;
     }
 }

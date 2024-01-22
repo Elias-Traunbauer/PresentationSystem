@@ -16,7 +16,6 @@ namespace Frontend
                 BaseAddress = new Uri(builder.HostEnvironment.BaseAddress.Replace("5117", "5111"))
                 
             });
-            builder.Services.AddScoped<OverviewController>();
 
             await builder.Build().RunAsync();
         }
