@@ -1,0 +1,38 @@
+﻿@page "/"
+@using Frontend.Models
+
+<PageTitle>Home</PageTitle>
+
+<h1>Presentation Overview</h1>
+
+@{
+    IEnumerable<Presentation>? presentations = null;
+}
+
+@{
+if (presentations == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var presentation in presentations)
+            {
+                <li>
+                    <p>@presentation.Name</p>
+                    <p>@presentation.FromDate</p>
+                    <p>@presentation.ToDate</p>
+                    <p>@presentation.Location</p>
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    protected override async void OnInitialized()
+    {
+        this.presentations = await Http.GetFromJsonAsync<IEnumerable<Presentation>>("api/presentation");
+    }
+}
