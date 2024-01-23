@@ -9,6 +9,29 @@
 @code{
     public IEnumerable<Presentation>? Presentations = null;
     public bool Loading = true;
+    public DateOnly SelectedDate = DateOnly.FromDateTime(DateTime.Now);
+    public DateOnly SelectedMonth = DateOnly.FromDateTime(DateTime.Now);
+    public int DaysFromPreviousMonthDisplayed {
+        get
+        {
+            // takes the day cnt of the selected month, 
+            // Math.Floor((35 - selectedmonthdaycnt) / 2)
+            int daysInMonth = DateTime.DaysInMonth(SelectedMonth.Year, SelectedMonth.Month);
+            return (int)Math.Floor((35 - daysInMonth) / 2f);
+        }
+    }
+
+    public void PreviousMonth()
+    {
+        SelectedMonth = SelectedMonth.AddMonths(-1);
+        StateHasChanged();
+    }
+
+    public void NextMonth()
+    {
+        SelectedMonth = SelectedMonth.AddMonths(1);
+        StateHasChanged();
+    }
 }
 
 @{
@@ -18,34 +41,14 @@
     }
     else if (Presentations != null)
     { // calendar view
-        <div class="calendar">
-            <div class="calendar__header">
-                <span class="calendar__icon">«</span>
-                <span class="calendar__month">January 2024</span>
-                <span class="calendar__icon">»</span>
-            </div>
-            <div class="calendar__weekdays">
-                <div class="calendar__weekday">Sun</div>
-                <div class="calendar__weekday">Mon</div>
-                <div class="calendar__weekday">Tue</div>
-                <div class="calendar__weekday">Wed</div>
-                <div class="calendar__weekday">Thu</div>
-                <div class="calendar__weekday">Fri</div>
-                <div class="calendar__weekday">Sat</div>
-            </div>
-            <div class="calendar__days">
-                <!-- Example for a few days -->
-                <div class="calendar__day">1</div>
-                <div class="calendar__day">2</div>
-                <div class="calendar__day">3</div>
-                <!-- Add additional days as needed -->
-                <!-- Special classes for specific days -->
-                <div class="calendar__day calendar__day--today">4</div>
-                <div class="calendar__day calendar__day--selected">5</div>
-                <div class="calendar__day calendar__day--disabled">6</div>
-                <!-- Continue for the rest of the days -->
-            </div>
-        </div>
+        <button @onclick="PreviousMonth">Previous Month</button>
+        <button @onclick="NextMonth">Next Month</button>
+        DateOnly current = new DateOnly(SelectedDate.Year, SelectedDate.Month, 1).AddDays(-DaysFromPreviousMonthDisplayed);
+        for (int i = 0; i < 35; i++)
+        {
+            <p>@current.Day</p>
+            current = current.AddDays(1);
+        }
 
     }
     else
