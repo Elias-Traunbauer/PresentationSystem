@@ -6,60 +6,202 @@
 
 <h1>Presentation Overview</h1>
 
-@code{
+@code {
     public IEnumerable<Presentation>? Presentations = null;
     public bool Loading = true;
     public DateOnly SelectedDate = DateOnly.FromDateTime(DateTime.Now);
-    public DateOnly SelectedMonth = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    public int DaysFromPreviousMonthDisplayed {
+    public List<Presentation>? SelectedPresentations
+    {
         get
         {
-            // takes the day cnt of the selected month, 
+            if (Presentations == null)
+            {
+                return null;
+            }
+            var presentations = Presentations.Where(x => new DateOnly(x.FromDate.Year, x.FromDate.Month, x.FromDate.Day) == SelectedDate).ToList();
+            return presentations.Count > 0 ? presentations : null;
+        }
+    }
+    public HashSet<DateOnly> PresentationDates
+    {
+        get
+        {
+            if (Presentations == null)
+            {
+                return new HashSet<DateOnly>();
+            }
+            return new HashSet<DateOnly>(Presentations.Select(x => new DateOnly(x.FromDate.Year, x.FromDate.Month, x.FromDate.Day)));
+        }
+    }
+    private int _selectedYear = DateTime.Now.Year;
+    public int SelectedYear
+    {
+        get => _selectedYear;
+        set
+        {
+            _selectedYear = value;
+            StateHasChanged();
+        }
+
+    }
+    private int _selectedMonth = DateTime.Now.Month;
+    public int SelectedMonth
+    {
+        get => _selectedMonth;
+        set
+        {
+            _selectedMonth = value;
+            StateHasChanged();
+        }
+    }
+    public int DaysFromPreviousMonthDisplayed
+    {
+        get
+        {
+            // takes the day cnt of the selected month,
             // Math.Floor((35 - selectedmonthdaycnt) / 2)
-            int daysInMonth = DateTime.DaysInMonth(SelectedMonth.Year, SelectedMonth.Month);
+            int daysInMonth = DateTime.DaysInMonth(SelectedYear, SelectedMonth);
             return (int)Math.Floor(((7 * 5) - daysInMonth) / 2f);
         }
     }
 
     public void PreviousMonth()
     {
-        SelectedMonth = SelectedMonth.AddMonths(-1);
+        SelectedMonth--;
+        if (SelectedMonth < 1)
+        {
+            SelectedMonth = 12;
+            SelectedYear--;
+        }
         StateHasChanged();
     }
 
     public void NextMonth()
     {
-        SelectedMonth = SelectedMonth.AddMonths(1);
+        SelectedMonth++;
+        if (SelectedMonth > 12)
+        {
+            SelectedMonth = 1;
+            SelectedYear++;
+        }
         StateHasChanged();
     }
+    public void SelectDate(DateOnly date)
+    {
+        SelectedDate = date;
+        StateHasChanged();
+    }
+    public void SkipToNextPresentation()
+    {
+        if (Presentations == null)
+        {
+            return;
+        }
+        var nextPresentation = Presentations.Where(x => new DateOnly(x.FromDate.Year, x.FromDate.Month, x.FromDate.Day) > SelectedDate).OrderBy(x => x.FromDate).FirstOrDefault();
+        if (nextPresentation != null)
+        {
+            SelectedDate = new DateOnly(nextPresentation.FromDate.Year, nextPresentation.FromDate.Month, nextPresentation.FromDate.Day);
+SelectedYear = nextPresentation.FromDate.Year;
+            SelectedMonth = nextPresentation.FromDate.Month;
+        }
+        StateHasChanged();
+    }
+    public void SkipToLastPresentation() {
+        if (Presentations == null)
+        {
+            return;
+        }
+        var lastPresentation = Presentations.Where(x => new DateOnly(x.FromDate.Year, x.FromDate.Month, x.FromDate.Day) < SelectedDate).OrderBy(x => x.FromDate).LastOrDefault();
+        if (lastPresentation != null)
+        {
+            SelectedDate = new DateOnly(lastPresentation.FromDate.Year, lastPresentation.FromDate.Month, lastPresentation.FromDate.Day);
+            SelectedYear = lastPresentation.FromDate.Year;
+            SelectedMonth = lastPresentation.FromDate.Month;
+        }
+        StateHasChanged();
+     }
 }
 <div class="container">
-    <div>
-@{
-    if (Presentations == null && Loading)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else if (Presentations != null)
-    { // calendar view
-        <button @onclick="PreviousMonth">Previous Month</button>
-        <h2>@SelectedMonth.ToString("MMMM yyyy")</h2>
-        <button @onclick="NextMonth">Next Month</button>
-        DateOnly current = new DateOnly(SelectedMonth.Year, SelectedMonth.Month, 1).AddDays(-DaysFromPreviousMonthDisplayed);
-        for (int i = 0; i < 35; i++)
-        {
-            <div class="@(current.Month != SelectedMonth.Month ? "calendar__day--disabled" : "")">@current.Day</div>
-            current = current.AddDays(1);
-        }
-    }
-    else
-    {
-        <p><em>Loading encountered an error</em></p>
-    }
+    <div class="calandar_container">
+        @{
+            if (Presentations == null && Loading)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else if (Presentations != null)
+            { // calendar view
+                <div>
+                    <button class="month_button" @onclick="SkipToLastPresentation">@("<<")</button>
+                <button class="month_button" @onclick="PreviousMonth">@("<")</button>
+                <input type="number" min="1" max="12" @bind-value="@SelectedMonth" />
+                <input type="number" min="1900" max="2100" @bind-value="@SelectedYear" />
+                <button class="month_button" @onclick="NextMonth">></button>
+                    <button class="month_button" @onclick="SkipToNextPresentation">>></button>
+                </div>
+                DateOnly current = new DateOnly(SelectedYear, SelectedMonth, 1).AddDays(-DaysFromPreviousMonthDisplayed);
+                <div class="calendar-grid">
+                    @for (int i = 0; i < 35; i++)
+                    {
+                        DateOnly copiedDate = current;
+                        <div @onclick="() => SelectDate(copiedDate)" class="@(current.Month != SelectedMonth ? "disabled" : "") 
+                        @((DateTime.Now.Year == SelectedYear && DateTime.Now.Month == SelectedMonth && current.Day == DateTime.Now.Day) ? "today" : "") 
+                        @((SelectedDate == current) ? "selected" : "")
+                        @((PresentationDates.Contains(current)) ? "presentation_day" : "")">
+                        @current.Day
+                        </div>
+                        current = current.AddDays(1);
+                    }
+                </div>
+                <div class="legend">
+                    <span>
+                        <span class="todayText">■</span><span>Today</span>
+                    </span>
+                    <span>
+                        <span class="selectedText">■</span><span>Selected day</span>
+                    </span>
+                    <span>
+                        <span class="presentation_dayText">■</span><span>Day with presentation</span>
+                    </span>
+                </div>
+            }
+            else
+            {
+                <p><em>Loading encountered an error</em></p>
+            }
         }
     </div>
+    <span class="vertical_line"></span>
     <div>
-        <h2>Details</h2>
+        <h2>Presentations</h2>
+        <p class="header">Selected date</p>
+        <h3>@SelectedDate.ToString("dd MMMM yyyy")</h3>
+
+        @{
+            if (SelectedPresentations != null)
+            {
+                <div class="presentation_cards">
+                @foreach (var item in SelectedPresentations)
+                {
+                    <div class="presentation_card">
+                         <p class="header">Name</p>
+                        <h4>@item.Name</h4>
+                        <p class="header">Location</p>
+                        <span>@item.Location</span>
+                        <p class="header">Start</p>
+                        <span>@item.FromDate</span>
+                        <p class="header">End</p>
+                        <span>@item.ToDate</span>
+                    </div>
+                }
+                </div>
+            }
+            else
+            {
+                <h5 class="text-warning">Nothing to display :/</h5>
+                
+            }
+            <button class="newPresentation">New +</button>
+        }
     </div>
 </div>
 
