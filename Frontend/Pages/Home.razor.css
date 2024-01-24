@@ -1,118 +1,12 @@
-﻿.calendar {
-width: 100%;
-    height: 100%;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-
-}
-
-.calendar .calendar__header {
+﻿.container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
     align-items: center;
-    margin-bottom: 20px;
+    justify-content: center;
+    height: 100vh;
 }
 
-.calendar .calendar__header .calendar__icon {
-    font-size: 20px;
-    color: #000;
-    cursor: pointer;
-}
-
-.calendar .calendar__header .calendar__icon:hover {
-    color: #f00;
-}
-
-.calendar .calendar__header .calendar__month {
-    font-size: 20px;
-    font-weight: 500;
-    color: #000;
-}
-
-.calendar .calendar__weekdays {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.calendar .calendar__weekdays .calendar__weekday {
-    font-size: 14px;
-    font-weight: 500;
-    color: #000;
-    width: calc(100% / 7);
-    text-align: center;
-}
-
-.calendar .calendar__days {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.calendar .calendar__days .calendar__day {
-    font-size: 14px;
-    font-weight: 500;
-    color: #000;
-    width: calc(100% / 7);
-    text-align: center;
-    padding: 10px 0;
-    cursor: pointer;
-}
-
-.calendar .calendar__days .calendar__day:hover {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--disabled {
-    color: #ccc;
-    cursor: default;
-}
-
-.calendar .calendar__days .calendar__day--today {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected:hover {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--today {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--today:hover {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--disabled {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--disabled:hover {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--disabled.calendar__day--today {
-    background-color: #f00;
-    color: #fff;
-}
-
-.calendar .calendar__days .calendar__day--selected.calendar__day--disabled.calendar__day--today:hover {
-    background-color: #f00;
-    color: #fff;
+.container > div {
+    width: 50%;
+height: 100%;
 }

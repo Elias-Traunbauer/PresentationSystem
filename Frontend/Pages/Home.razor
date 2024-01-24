@@ -10,7 +10,7 @@
     public IEnumerable<Presentation>? Presentations = null;
     public bool Loading = true;
     public DateOnly SelectedDate = DateOnly.FromDateTime(DateTime.Now);
-    public DateOnly SelectedMonth = DateOnly.FromDateTime(DateTime.Now);
+    public DateOnly SelectedMonth = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     public int DaysFromPreviousMonthDisplayed {
         get
         {
@@ -33,7 +33,8 @@
         StateHasChanged();
     }
 }
-
+<div class="container">
+    <div>
 @{
     if (Presentations == null && Loading)
     {
@@ -42,11 +43,12 @@
     else if (Presentations != null)
     { // calendar view
         <button @onclick="PreviousMonth">Previous Month</button>
+        <h2>@SelectedMonth.ToString("MMMM yyyy")</h2>
         <button @onclick="NextMonth">Next Month</button>
-        DateOnly current = new DateOnly(SelectedDate.Year, SelectedDate.Month, 1).AddDays(-DaysFromPreviousMonthDisplayed);
+        DateOnly current = new DateOnly(SelectedMonth.Year, SelectedMonth.Month, 1).AddDays(-DaysFromPreviousMonthDisplayed);
         for (int i = 0; i < 35; i++)
         {
-            <p>@current.Day</p>
+            <p class="@(current.Month != SelectedMonth.Month ? "calendar__day--disabled" : "")">@current.Day</p>
             current = current.AddDays(1);
         }
 
@@ -55,7 +57,12 @@
     {
         <p><em>Loading encountered an error</em></p>
     }
-}
+        }
+    </div>
+    <div>
+        <h2>Details</h2>
+    </div>
+</div>
 
 @code {
     protected override async Task OnInitializedAsync()
