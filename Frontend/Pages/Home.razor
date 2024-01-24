@@ -17,7 +17,7 @@
             // takes the day cnt of the selected month, 
             // Math.Floor((35 - selectedmonthdaycnt) / 2)
             int daysInMonth = DateTime.DaysInMonth(SelectedMonth.Year, SelectedMonth.Month);
-            return (int)Math.Floor((35 - daysInMonth) / 2f);
+            return (int)Math.Floor(((7 * 5) - daysInMonth) / 2f);
         }
     }
 
@@ -48,10 +48,9 @@
         DateOnly current = new DateOnly(SelectedMonth.Year, SelectedMonth.Month, 1).AddDays(-DaysFromPreviousMonthDisplayed);
         for (int i = 0; i < 35; i++)
         {
-            <p class="@(current.Month != SelectedMonth.Month ? "calendar__day--disabled" : "")">@current.Day</p>
+            <div class="@(current.Month != SelectedMonth.Month ? "calendar__day--disabled" : "")">@current.Day</div>
             current = current.AddDays(1);
         }
-
     }
     else
     {
