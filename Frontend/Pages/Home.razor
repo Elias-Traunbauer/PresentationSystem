@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Frontend.Models
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
@@ -138,12 +139,44 @@ SelectedYear = nextPresentation.FromDate.Year;
                 <button class="month_button" @onclick="NextMonth">></button>
                     <button class="month_button" @onclick="SkipToNextPresentation">>></button>
                 </div>
+                // find nearest monday to the 1st
+                var firstOfMonthDay = new DateOnly(SelectedYear, SelectedMonth, 1).DayOfWeek;
+                int DaysFromPreviousMonthDisplayed = 0;
+                switch (firstOfMonthDay)
+                {
+                    case DayOfWeek.Monday:
+                        DaysFromPreviousMonthDisplayed = 0;
+                        break;
+                    case DayOfWeek.Tuesday:
+                        DaysFromPreviousMonthDisplayed = 1;
+                        break;
+                    case DayOfWeek.Wednesday:
+                        DaysFromPreviousMonthDisplayed = 2;
+                        break;
+                    case DayOfWeek.Thursday:
+                        DaysFromPreviousMonthDisplayed = 3;
+                        break;
+                    case DayOfWeek.Friday:
+                        DaysFromPreviousMonthDisplayed = 3;
+                        break;
+                    case DayOfWeek.Saturday:
+                        DaysFromPreviousMonthDisplayed = 3;
+                        break;
+                    case DayOfWeek.Sunday:
+                        DaysFromPreviousMonthDisplayed = 3;
+                        break;
+                }
+
                 DateOnly current = new DateOnly(SelectedYear, SelectedMonth, 1).AddDays(-DaysFromPreviousMonthDisplayed);
                 <div class="calendar-grid">
+                    @for (int d = 0; d < 7; d++) {
+                        DateOnly day = current.AddDays(d);
+                        <div style="font-size: 1em; padding: 0.4em 0 0.4em 0">@day.DayOfWeek.ToString().Substring(0, 3)</div>
+                    }
                     @for (int i = 0; i < 35; i++)
                     {
                         DateOnly copiedDate = current;
-                        <div @onclick="() => SelectDate(copiedDate)" class="@(current.Month != SelectedMonth ? "disabled" : "") 
+                        <div @onclick="() => SelectDate(copiedDate)" class="calendar_item @(current.Month != SelectedMonth ? "disabled" : "") 
                         @((DateTime.Now.Year == SelectedYear && DateTime.Now.Month == SelectedMonth && current.Day == DateTime.Now.Day) ? "today" : "") 
                         @((SelectedDate == current) ? "selected" : "")
                         @((PresentationDates.Contains(current)) ? "presentation_day" : "")">
@@ -183,7 +216,7 @@ SelectedYear = nextPresentation.FromDate.Year;
                 @foreach (var item in SelectedPresentations)
                 {
                     <div class="presentation_card">
-                         <p class="header">Name</p>
+                        <p class="header">Name</p>
                         <h4>@item.Name</h4>
                         <p class="header">Location</p>
                         <span>@item.Location</span>
@@ -197,10 +230,10 @@ SelectedYear = nextPresentation.FromDate.Year;
             }
             else
             {
-                <h5 class="text-warning">Nothing to display :/</h5>
+                <h5>Nothing to display yet :/</h5>
                 
             }
-            <button class="newPresentation">New +</button>
+            <button class="newPresentation" @onclick="() => NavigateToNewPresentation(SelectedDate)">New +</button>
         }
     </div>
 </div>
@@ -210,5 +243,15 @@ SelectedYear = nextPresentation.FromDate.Year;
     {
         this.Presentations = await Http.GetFromJsonAsync<IEnumerable<Presentation>>("api/presentation");
         Loading = false;
+    }
+
+    public void NavigateToNewPresentation(DateOnly? date = null)
+    {
+        if (date != null)
+        {
+            NavigationManager.NavigateTo("/newPresentation?fromDate=" + date!.Value.ToString("o"));
+        }else {
+            NavigationManager.NavigateTo("/newPresentation");
+        }
     }
 }

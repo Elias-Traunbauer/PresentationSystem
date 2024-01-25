@@ -1,7 +1,135 @@
 ﻿@page "/newPresentation"
+@using Frontend.Models
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
 
-<h3>NewPresentation</h3>
+<h3>Persist new presentation</h3>
 
 @code {
+    [Parameter] public string? FromDate { get; set; }
+    public Presentation? Presentation { get; set; }
+    public Dictionary<string, string>? Errors { get; set; }
+    public bool errorBlink = false;
+    public record Response(int status, Dictionary<string, string>? errors);
 
+    public async void Save()
+    {
+        if (Presentation == null)
+        {
+            return;
+        }
+
+        Errors = new Dictionary<string, string>();
+
+        if (string.IsNullOrEmpty(Presentation.Name))
+        {
+            Errors.Add(nameof(Presentation.Name), "Name is required");
+        }
+
+        if (Presentation.FromDate > Presentation.ToDate)
+        {
+            Errors.Add(nameof(Presentation.ToDate), "ToDate cannot be after FromDate");
+        }
+
+        if (string.IsNullOrEmpty(Presentation.Location))
+        {
+            Errors.Add(nameof(Presentation.Location), "Location is required");
+        }
+
+        if (Errors.Count > 0)
+        {
+            errorBlink = true;
+            ErrorBlinkDisable();
+            StateHasChanged();
+            return;
+        }
+
+        HttpRequestMessage httpRequestMessage = new HttpRequestMessage()
+            {
+                Content = JsonContent.Create(Presentation),
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(Http.BaseAddress + "api/presentation")
+            };
+        var result = await Http.SendAsync(httpRequestMessage);
+
+        if (result.IsSuccessStatusCode)
+        {
+            Response data = (await result.Content.ReadFromJsonAsync<Response>())!;
+
+            if (data.status == 200)
+            {
+                NavigationManager.NavigateTo($"/");
+            }
+            else
+            {
+                Errors = data.errors;
+            }
+        }
+        else
+        {
+            Errors = new Dictionary<string, string>();
+            Errors.Add("Name", "Something went wrong");
+        }
+        errorBlink = true;
+        ErrorBlinkDisable();
+        StateHasChanged();
+    }
+
+    public string? GetError(string key)
+    {
+        if (Errors == null)
+            return null;
+
+        if (Errors.TryGetValue(key, out var value))
+            return value;
+
+        return null;
+    }
+
+    public async void ErrorBlinkDisable()
+    {
+        await Task.Delay(300);
+        errorBlink = false;
+        StateHasChanged();
+    }
+}
+
+<div class="container">
+    @if (Presentation != null)
+    {
+        <form @onsubmit="Save">
+            <p class="header">Name</p>
+            <input type="text" @bind-value="@Presentation.Name" />
+            <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.Name)) ?? "")</span>
+            <p class="header">Location</p>
+            <input type="text" @bind-value="@Presentation.Location" />
+            <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.Location)) ?? "")</span>
+            <p class="header">Date from</p>
+            <input type="datetime" @bind-value="@Presentation.FromDate" />
+            <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.FromDate)) ?? "")</span>
+            <p class="header">Date to</p>
+            <input type="datetime" @bind-value="@Presentation.ToDate" />
+            <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.ToDate)) ?? "")</span>
+            <br />
+            <button type="submit" class="save_btn" @onclick="Save">Save</button>
+        </form>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("fromDate", out var fromDateValues))
+        {
+            FromDate = fromDateValues.FirstOrDefault();
+        }
+
+        if (FromDate != null)
+            Presentation = new Presentation("", DateOnly.Parse(FromDate).ToDateTime(new TimeOnly()), DateOnly.Parse(FromDate).ToDateTime(new TimeOnly()), "");
+        else
+            Presentation = new Presentation("", DateTime.Now, DateTime.Now, "");
+    }
 }

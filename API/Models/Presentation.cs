@@ -19,7 +19,8 @@
         {
             if (obj is Presentation other)
             {
-                return Name == other.Name && FromDate == other.FromDate && ToDate == other.ToDate && Location == other.Location;
+                // only name, because it's the only thing that can be used to identify a presentation
+                return Name == other.Name;
             }
             return false;
         }
