@@ -50,5 +50,17 @@ namespace API.Services
 
             return persisted;
         }
+
+        public int PresentationsBetween(DateTime? fromDate, DateTime? toDate)
+        {
+            // get all presentations between fromDate and toDate, null means  infinity
+            var presentations = Presentations.Where(p => (fromDate == null || p.FromDate >= fromDate) && (toDate == null || p.ToDate <= toDate));
+
+            // count them
+            var count = presentations.Count();
+
+            // return the count
+            return count;
+        }
     }
 }

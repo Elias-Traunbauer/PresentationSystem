@@ -60,6 +60,13 @@
     align-items: center;
 }
 
+.calandar_container > div:first-child {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.1rem;
+}
+
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -73,7 +80,7 @@
         text-align: center;
         padding: 0.5rem 1rem 0.5rem 1rem;
         cursor: pointer;
-        border: dotted 1px transparent;
+        border: dotted 2px transparent;
         user-select: none;
     }
 
@@ -82,8 +89,8 @@
         }
 
 .selected {
-    background-color: rgba(0, 255, 0, 0.3) !important;
-    border: dotted 1px black !important;
+    border: dotted 2px black !important;
+    filter: drop-shadow(0 0 9px rgba(30, 30, 30, 0.3));
 }
 
 .disabled {
@@ -92,7 +99,7 @@
 }
 
 .today {
-    background-color: rgba(0, 0, 255, 0.5);
+    background-color: rgba(0, 0, 255, 0.3);
 }
 
 .presentation_day {
@@ -104,7 +111,7 @@
 }
 
 .selectedText {
-    color: rgba(0, 255, 0, 0.3);
+    color: rgba(0, 255, 0, 0);
 }
 
 .presentation_dayText {

@@ -37,5 +37,17 @@ namespace API.Controllers
                 });
             }
         }
+
+        [HttpGet("statistics/{fromDate}/{toDate}")]
+        public IActionResult GetStatistics([FromServices] PresentationService presentationService, DateTime fromDate, DateTime toDate)
+        {
+            var presentationCount = presentationService.PresentationsBetween(fromDate, toDate);
+
+            return Ok(new
+            {
+                Status = 200,
+                Value = presentationCount
+            });
+        }
     }
 }

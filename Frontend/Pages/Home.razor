@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Frontend.Models
+@using Microsoft.AspNetCore.WebUtilities
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
@@ -190,7 +191,7 @@ SelectedYear = nextPresentation.FromDate.Year;
                         <span class="todayText">■</span><span>Today</span>
                     </span>
                     <span>
-                        <span class="selectedText">■</span><span>Selected day</span>
+                        <span class="selected">■</span><span>Selected day</span>
                     </span>
                     <span>
                         <span class="presentation_dayText">■</span><span>Day with presentation</span>
@@ -241,6 +242,15 @@ SelectedYear = nextPresentation.FromDate.Year;
 @code {
     protected override async Task OnInitializedAsync()
     {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("date", out var fromDateValues))
+        {
+            SelectedDate = DateOnly.Parse(fromDateValues.FirstOrDefault()!);
+        }
+        // clear query parameters with navigation
+        NavigationManager.NavigateTo(NavigationManager.Uri.Split('?')[0]);
+
         this.Presentations = await Http.GetFromJsonAsync<IEnumerable<Presentation>>("api/presentation");
         Loading = false;
     }

@@ -59,7 +59,7 @@
 
             if (data.status == 200)
             {
-                NavigationManager.NavigateTo($"/");
+                NavigationManager.NavigateTo(/* $"/?date=" + Presentation.FromDate.ToString("o") */ "/");
             }
             else
             {
@@ -100,16 +100,16 @@
     {
         <form @onsubmit="Save">
             <p class="header">Name</p>
-            <input type="text" @bind-value="@Presentation.Name" />
+            <input placeholder="Presentation name" type="text" @bind-value="@Presentation.Name" />
             <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.Name)) ?? "")</span>
             <p class="header">Location</p>
-            <input type="text" @bind-value="@Presentation.Location" />
+            <input placeholder="Room 001" type="text" @bind-value="@Presentation.Location" />
             <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.Location)) ?? "")</span>
             <p class="header">Date from</p>
-            <input type="datetime" @bind-value="@Presentation.FromDate" />
+            <input type="datetime-local" @bind-value="@Presentation.FromDate" />
             <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.FromDate)) ?? "")</span>
             <p class="header">Date to</p>
-            <input type="datetime" @bind-value="@Presentation.ToDate" />
+            <input type="datetime-local" @bind-value="@Presentation.ToDate" />
             <span class="@(errorBlink ? "error" : "")">@(GetError(nameof(Presentation.ToDate)) ?? "")</span>
             <br />
             <button type="submit" class="save_btn" @onclick="Save">Save</button>

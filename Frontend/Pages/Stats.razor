@@ -1,10 +1,42 @@
 ﻿@page "/stats"
+@inject HttpClient Http
 <h3>Statistics</h3>
 
 @code {
+    public DateTime? FromDate {get; set; }
+    public DateTime? ToDate {get; set; }
+    public bool Loading { get; set; } = false;
 
+    public int? Count { get; set; }
+    public record Response(int status, int value);
+
+    public async void LoadStatistics()
+    {
+        if (FromDate == null || ToDate == null)
+        {
+            return;
+        }
+        Loading = true;
+        StateHasChanged();
+        var result = await Http.GetFromJsonAsync<Response>("api/presentation/statistics/" + (FromDate?.ToString("yyyy-MM-dd") ?? "null") + "/" + (ToDate?.ToString("yyyy-MM-dd") ?? "null"));
+        Loading = false;
+        Count = result!.value;
+        StateHasChanged();
+    }
 }
 
-<div>
-
-</div>
+<form class="container @(Loading ? "disabled": "")" @onsubmit="LoadStatistics">
+    <p class="header">Start date</p>
+    <input required type="datetime-local" @bind-value="FromDate" />
+    <p class="header">End date</p>
+    <input required type="datetime-local" @bind-value="ToDate" />
+    <button class="submit" @onclick="LoadStatistics">Show me</button>
+</form>
+@if(Count != null)
+{
+    <div>
+        <br />
+        <h2 class="header">Count</h2>
+        <h3>@Count</h3>
+    </div>
+}
